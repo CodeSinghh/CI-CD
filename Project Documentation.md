@@ -1,73 +1,142 @@
 # Jenkins CI/CD pipeline with GitHub webhook for Docker app deployment
 
 This comprehensive guide walks you through the process of establishing a robust Continuous Integration and Continuous Deployment (CI/CD) pipeline using Jenkins, seamlessly integrated with GitHub webhooks, for the deployment of Dockerized applications on Amazon Web Services (AWS) EC2 instances. This setup utilizes the declarative pipeline approach, ensuring clarity and maintainability in your deployment process.
+# Setting Up Jenkins on AWS EC2 Instance
 
-## Prerequisites
-- An AWS account
-- Basic understanding of AWS services
-- Basic knowledge of Git and GitHub
-- Familiarity with Jenkins and Docker concepts
+## Step-by-Step Guide
 
-## Step 1: Create an EC2 Instance
+### Step 1: Create an EC2 Instance
 1. Log in to the AWS Management Console.
 2. Navigate to the EC2 Dashboard.
-3. Launch a new instance with the following specifications:
-   - Name: jenkins-server
+3. Launch a new instance named "jenkins-server" with the following specifications:
    - AMI: Ubuntu
    - Instance type: t2.micro (free tier)
    - Key pair: Create a new key pair (e.g., docker.pem)
    - Security group: Allow HTTP and HTTPS traffic
-4. Click "Launch Instance" and download the .pem file.
+4. Download the .pem file associated with the key pair.
+5. Click on "Launch Instance".
 
-## Step 2: Connect to the EC2 Instance
-1. Open your terminal and navigate to the directory containing the downloaded .pem file.
-2. Use SSH to connect to the EC2 instance using the command provided in the AWS console.
+### Step 2: Connect to the EC2 Instance
+1. Copy the SSH command from the EC2 instance details in the AWS console.
+2. Open a terminal and navigate to the directory containing the downloaded .pem file.
+3. Paste the copied SSH command in the terminal and hit Enter.
 
-## Step 3: Generate SSH Keys
+### Step 3: Generate SSH Keys
 1. In the terminal connected to the EC2 instance, run the command `ssh-keygen`.
 2. This will generate public and private SSH keys (`id_rsa` and `id_rsa.pub`).
 
-## Step 4: Install Jenkins and Docker
-1. Install Jenkins and Docker on the EC2 instance by following the official documentation for Ubuntu.
-2. Verify the installations by running `jenkins --version` and `docker --version`.
+### Step 4: Install Jenkins and Docker
+1. Follow the official documentation for installing Jenkins on Ubuntu from [here](https://www.jenkins.io/doc/book/installing/linux/).
+2. Additionally, install Docker on the machine using the command `sudo apt install docker.io`.
+   
+### Step 5: Check Installation
+1. Verify Jenkins installation by running `jenkins --version` in the terminal.
+2. Verify Docker installation by running `docker --version`.
 
-## Step 5: Configure Security Group
-1. Allow inbound traffic on ports 8080 and 8001 in the security group associated with the EC2 instance.
+### Step 6: Configure Security Group
+1. In the AWS console, navigate to the security group associated with the EC2 instance.
+2. Allow inbound traffic on ports 8080 and 8001.
 
-## Step 6: Access Jenkins Portal
-1. Use the public IP of the EC2 instance to access the Jenkins portal in your web browser (e.g., http://<public_ip>:8080).
-2. Follow the setup process to obtain the initial administrator password.
+### Step 7: Access Jenkins Portal
+1. Copy the Public IP of the EC2 instance from the AWS console.
+2. Paste the IP address in a web browser followed by port 8080 (e.g., `http://<public_ip>:8080`).
 
-## Step 7: Install Suggested Plugins
-1. Jenkins will prompt to install suggested plugins during setup. Click "Install Suggested Plugins" to proceed.
+### Step 8: Obtain Administrator Password
+1. Access the Jenkins portal and follow the setup process.
+2. To obtain the initial administrator password, run `cat /var/lib/jenkins/secrets/initialAdminPassword` on the EC2 instance.
 
-## Step 8: Create Admin User
-1. Follow the on-screen instructions to create the first admin user for Jenkins.
+### Step 9: Paste Administrator Password and Install Suggested Plugins
+1. Paste the obtained initial administrator password in the "Administrator Password" field in the Jenkins setup wizard.
+2. Click on "Install Suggested Plugins".
 
-## Step 9: Create a Declarative Pipeline Project
-1. From the Jenkins dashboard, click "New Item".
-2. Enter the project name (e.g., todo-app) and select "Pipeline".
-3. Click "Ok" to create the project.
+### Step 10: Install Suggested Plugins
+1. Wait for Jenkins to install the suggested plugins automatically.
 
-## Step 10: Configure Pipeline Script
-1. In the project configuration, select "Pipeline script from SCM".
-2. Choose Git as SCM and provide the repository URL and credentials if required.
-3. Specify the Jenkinsfile path if it's not in the repository root.
+### Step 11: Create First Admin User
+1. After the plugin installation is complete, Jenkins will prompt to create the first admin user.
+2. Follow the on-screen instructions to add the necessary details for the admin user.
 
-## Step 11: Configure GitHub Webhook
-1. In the GitHub repository settings, configure a webhook with the payload URL `http://<public_ip>:8080/github-webhook/`.
-2. Select "Just the push event" for webhook trigger.
+### Step 12: Fill Up Description
+1. Once the admin user is created, Jenkins homepage will be displayed.
+2. Proceed to fill up the necessary description or details for your Jenkins setup.
 
-## Step 12: Save Configured Project
+### Step 13: Create a CI/CD Pipeline
+1. To create a new CI/CD pipeline, navigate to the Jenkins Dashboard.
+2. Click on "New Item".
+
+### Step 14: Add Project Details
+1. Enter the name of the project as "todo-app".
+2. Select the project type as "Freestyle project".
+3. Click "Ok" to proceed.
+
+### Step 15: Add Description
+1. Fill up the description for the project as required.
+
+### Step 16: Configure Source Code Management
+1. Under the project configuration, select "Git" as the source code management system.
+2. Add the repository URL and credentials if required.
+
+### Step 17: Save Configuration
+1. Save the project configuration by clicking on the "Save" or "Apply" button.
+
+### Step 18: Verify Credential Addition
+1. Verify that the repository URL and credentials are correctly added for accessing the source code.
+2. If credentials are not added, ensure to add them to enable Jenkins to fetch code from the Git repository.
+
+### Step 19: Add Build Step
+1. Under the project configuration, select "Execute Shell" as the build step.
+2. Write the necessary shell commands to build a Docker image and create a container from the Docker image.
+
+### Step 20: Trigger Build
+1. Click on "Build Now" to trigger the build process.
+2. Monitor the build progress in the build history.
+
+### Step 21: Check Output Console
+1. Review the output console to monitor the build process and identify any errors or issues.
+
+### Step 22: Access Live Web App
+1. After a successful build, open a web browser.
+2. Enter the following URL, replacing `<public_ip_of_ec2>` with the public IP address of your EC2 instance: `http://<public_ip_of_ec2>:8001`.
+3. This will allow you to access the live web application deployed using the CI/CD pipeline.
+
+### Step 23: Configure GitHub Webhook (Part 1)
+1. To enable automatic triggering of the pipeline on code commits, configure the project again.
+2. Add the following details:
+   - Build Trigger: GitHub hook trigger for GitScm polling.
+   - Description: GitHub webhook integration.
+
+### Step 24: Install Git Integration Plugin
+1. Navigate to "Manage Jenkins" > "Manage Plugins" > "Available" tab.
+2. Search for the "Git Integration" plugin and install it.
+
+### Step 25: Add SSH Key to GitHub
+1. Go to GitHub > Settings > SSH and GPG Keys > New SSH Key.
+2. Add details as follows:
+   - Title: dsingh993252@gmail.com
+   - Key type: <public_key>
+3. Copy the content of the `id_rsa.pub` file and paste it as the SSH key.
+
+### Step 26: Configure SSH Key in GitHub
+1. Open the `id_rsa.pub` file and copy its content (public key).
+2. Add the SSH key to GitHub as per the instructions provided in step 27.
+
+### Step 27: Configure Webhook in GitHub
+1. In the GitHub repository settings, navigate to Webhooks.
+2. Add a new webhook with the following details:
+   - Payload URL: `http://<public_ip_of_ec2>:8080/github-webhook/`
+   - Content Type: `application/json`
+   - Select "Just the push event" for webhook trigger.
+   - Set Active to true.
+3. Click "Add Webhook" to save the configuration.
+
+### Step 28: Save Configured Project
 1. Save the project configuration in Jenkins.
 
-## Step 13: Test CI/CD Pipeline
+### Step 29: Test Pipeline
 1. Make changes to the code in the GitHub repository and push them.
-2. The changes should trigger Jenkins to automatically build and deploy the updated application.
+2. The pipeline should automatically trigger, and the new code will be deployed to the live web application.
 
-## Step 14: Monitor CI/CD Pipeline
-1. Use the Jenkins dashboard to monitor the CI/CD pipeline's execution.
-2. Review build logs and deployment status to ensure everything is running smoothly.
+### Step 30: Verify Deployment
+1. After the pipeline runs successfully, verify that the changes are reflected in the live web application.
 
-## Step 15: Scale and Optimize
-1. As your application grows, consider scaling your infrastructure and optimizing the CI/CD pipeline for better performance and efficiency.
+
